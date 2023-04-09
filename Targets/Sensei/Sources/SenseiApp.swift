@@ -4,6 +4,8 @@ import AppKit
 @main
 struct SenseiApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @Environment(\.openWindow) private var openWindow
+    @Environment(\.openURL) private var openURL
 
     var body: some Scene {
         WindowGroup {
@@ -15,6 +17,25 @@ struct SenseiApp: App {
                     reducer: AppReducer()
                 )
             )
+        }
+        .commands {
+            CommandGroup(after: .appInfo) {
+                Button("Settings") {
+                    openWindow(id: "settings")
+                }
+                .keyboardShortcut(",", modifiers: .command)
+            }
+
+            CommandGroup(before: .help) {
+                Button("Source Code") {
+                    openURL(.init(string: "https://github.com/nixzhu/Sensei")!)
+                }
+                .keyboardShortcut("/", modifiers: .command)
+            }
+        }
+
+        Window("Settings", id: "settings") {
+            SettingsView()
         }
     }
 }

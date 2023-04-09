@@ -121,7 +121,7 @@ struct DetailView: View {
                 Button {
                     viewStore.send(.updateEditChatPresented(true))
                 } label: {
-                    Image(systemName: "gear")
+                    Image(systemName: "info.circle")
                 }
                 .help("Edit chat")
                 .sheet(

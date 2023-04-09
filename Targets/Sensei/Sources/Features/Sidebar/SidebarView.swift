@@ -25,7 +25,6 @@ struct SidebarView: View {
                     }
                 }
             }
-            .navigationSplitViewColumnWidth(min: 160, ideal: 200, max: 300)
             .toolbar {
                 ToolbarItemGroup {
                     Spacer()

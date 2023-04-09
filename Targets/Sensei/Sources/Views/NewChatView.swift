@@ -53,36 +53,6 @@ struct NewChatView: View {
 
             Group {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Custom Host (Shared by all chats)")
-
-                    TextField(
-                        "api.openai.com",
-                        text: Settings.$customHost
-                    )
-                    .textFieldStyle(.plain)
-                    .padding(8)
-                    .background(Color(.textBackgroundColor))
-                    .cornerRadius(5)
-                }
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("API Key (Shared by all chats)")
-
-                    TextField(
-                        "sk-",
-                        text: Settings.$apiKey
-                    )
-                    .textFieldStyle(.plain)
-                    .padding(8)
-                    .background(Color(.textBackgroundColor))
-                    .cornerRadius(5)
-                }
-            }
-
-            Divider()
-
-            Group {
-                VStack(alignment: .leading, spacing: 4) {
                     Text("Name")
 
                     TextField(
@@ -109,7 +79,9 @@ struct NewChatView: View {
                     .cornerRadius(5)
                     .frame(height: 100)
                 }
+            }
 
+            Group {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Model")
 
