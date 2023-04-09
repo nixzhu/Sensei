@@ -40,7 +40,7 @@ extension API {
         model: ChatGPTModel,
         temperature: Double,
         messages: [Message]
-    ) async throws -> String {
+    ) async throws -> AsyncThrowingStream<String, Swift.Error> {
         let apiKey = Settings.apiKey
 
         guard !apiKey.isEmpty else {
@@ -66,12 +66,14 @@ extension API {
 
             let model: String
             let temperature: Double
+            let stream: Bool
             let messages: [Message]
         }
 
         let input = Input(
             model: model.rawValue,
             temperature: temperature,
+            stream: true,
             messages: messages.map {
                 .init(
                     role: $0.role.rawValue,
@@ -86,17 +88,25 @@ extension API {
 
         urlRequest.httpBody = try JSONEncoder().encode(input)
 
-        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+        let (result, response) = try await URLSession.shared.bytes(for: urlRequest)
 
         guard let httpURLResponse = response as? HTTPURLResponse else {
             throw Error.networkFailed
         }
 
-        guard httpURLResponse.statusCode == 200 else {
+        guard 200...299 ~= httpURLResponse.statusCode else {
+            let errorJSONString: String = try await {
+                var string = ""
+
+                for try await line in result.lines {
+                    string += line
+                }
+
+                return string
+            }()
+
             #if DEBUG
-            if let string = String(data: data, encoding: .utf8) {
-                print("output:", string)
-            }
+            print("errorJSONString:", errorJSONString)
             #endif
 
             struct Output: AnandaModel {
@@ -119,49 +129,29 @@ extension API {
                 }
             }
 
-            let output = Output(jsonData: data)
+            let output = Output(jsonString: errorJSONString)
 
             throw Error.invalidResponse(httpURLResponse.statusCode, output.error.code)
         }
 
-        #if DEBUG
-        if let string = String(data: data, encoding: .utf8) {
-            print("output:", string)
-        }
-        #endif
-
-        struct Output: AnandaModel {
-            struct Usage: AnandaModel {
-                let promptTokens: Int
-                let completionTokens: Int
-                let totalTokens: Int
-
-                init(json: AnandaJSON) {
-                    promptTokens = json.prompt_tokens.int()
-                    completionTokens = json.completion_tokens.int()
-                    totalTokens = json.total_tokens.int()
-                }
-            }
-
+        struct StreamOutput: AnandaModel {
             struct Choice: AnandaModel {
-                struct Message: AnandaModel {
-                    let role: String
-                    let content: String
+                struct Delta: AnandaModel {
+                    let content: String?
 
                     init(json: AnandaJSON) {
-                        role = json.role.string()
-                        content = json.content.string()
+                        content = json.content.string
                     }
                 }
 
-                let message: Message
-                let finishReason: String
+                let delta: Delta
                 let index: Int
+                let finishReason: String?
 
                 init(json: AnandaJSON) {
-                    message = .init(json: json.message)
-                    finishReason = json.finish_reason.string()
+                    delta = .init(json: json.delta)
                     index = json.index.int()
+                    finishReason = json.finish_reason.string
                 }
             }
 
@@ -169,7 +159,6 @@ extension API {
             let object: String
             let created: Date
             let model: String
-            let usage: Usage
             let choices: [Choice]
 
             init(json: AnandaJSON) {
@@ -177,17 +166,38 @@ extension API {
                 object = json.object.string()
                 created = json.created.date()
                 model = json.model.string()
-                usage = .init(json: json.usage)
                 choices = json.choices.array().map { .init(json: $0) }
             }
         }
 
-        let output = Output(jsonData: data)
+        return AsyncThrowingStream<String, Swift.Error> { continuation in
+            Task(priority: .userInitiated) {
+                do {
+                    for try await line in result.lines {
+                        #if DEBUG
+                        print("line:", line)
+                        #endif
 
-        if let outputContent = output.choices.first?.message.content, !outputContent.isEmpty {
-            return outputContent
+                        if line.hasPrefix("data: "),
+                           let data = line.dropFirst(6).data(using: .utf8)
+                        {
+                            let output = StreamOutput(jsonData: data)
+
+                            if let content = output.choices.first?.delta.content {
+                                continuation.yield(content)
+                            }
+
+                            if output.choices.first?.finishReason == "stop" {
+                                break
+                            }
+                        }
+                    }
+
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
         }
-
-        throw Error.invalidContent(String(data: data, encoding: .utf8) ?? "")
     }
 }

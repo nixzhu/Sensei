@@ -24,8 +24,8 @@ final class PrismHighlighter {
         language: String,
         colorPalette: ColorPalette
     ) -> NSAttributedString? {
-        assert(!code.isEmpty)
-        assert(!language.isEmpty)
+        guard !code.isEmpty else { return nil }
+        guard !language.isEmpty else { return nil }
 
         context.globalObject.setValue(code, forProperty: "nixInput")
         context.globalObject.setValue(language, forProperty: "nixLanguage")
@@ -37,10 +37,6 @@ final class PrismHighlighter {
         )
 
         guard let html = result?.toString() else { return nil }
-
-        #if DEBUG
-        print("html:", html)
-        #endif
 
         return Converter(html: html, colorPalette: colorPalette).attributedString
     }

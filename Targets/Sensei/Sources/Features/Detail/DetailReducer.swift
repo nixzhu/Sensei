@@ -41,6 +41,7 @@ struct DetailReducer: ReducerProtocol {
         case sendInputIfCan(ScrollViewProxy)
         case retryChatIfCan(ScrollViewProxy)
         case appendMessage(Message, ScrollViewProxy)
+        case updateMessage(Message, ScrollViewProxy)
         case scrollToMessage(Message, ScrollViewProxy)
         case markReceiving(ScrollViewProxy)
         case sendChatIfCan(ScrollViewProxy)
@@ -164,6 +165,16 @@ struct DetailReducer: ReducerProtocol {
                 } else {
                     return .none
                 }
+            case .updateMessage(let message, let scrollViewProxy):
+                if message.chatID == state.chat.id {
+                    state.messages[id: message.id] = message
+
+                    return .send(
+                        .scrollToMessage(message, scrollViewProxy)
+                    )
+                } else {
+                    return .none
+                }
             case .scrollToMessage(let message, let scrollViewProxy):
                 return .run { _ in
                     withAnimation {
@@ -222,24 +233,38 @@ struct DetailReducer: ReducerProtocol {
 
                 return .run { send in
                     do {
-                        let output = try await API.chatCompletions(
+                        let stream = try await API.chatCompletions(
                             model: chat.model,
                             temperature: chat.temperature,
                             messages: [.init(role: .system, content: chat.prompt)] + messages
                         )
 
-                        let localMessage = try databaseManager.insert(
-                            LocalMessage(
-                                chatID: chat.id.rawValue,
-                                source: .sensei,
-                                content: output
-                            )
-                        )
+                        var receivingLocalMessage: LocalMessage?
 
-                        let message = localMessage.message
+                        for try await text in stream {
+                            if var localMessage = receivingLocalMessage {
+                                localMessage.content += text
 
-                        await send(.clearReceivingMessages)
-                        await send(.appendMessage(message, scrollViewProxy))
+                                try databaseManager.update(localMessage)
+
+                                receivingLocalMessage = localMessage
+
+                                await send(.updateMessage(localMessage.message, scrollViewProxy))
+                            } else {
+                                let localMessage = try databaseManager.insert(
+                                    LocalMessage(
+                                        chatID: chat.id.rawValue,
+                                        source: .sensei,
+                                        content: text
+                                    )
+                                )
+
+                                receivingLocalMessage = localMessage
+
+                                await send(.clearReceivingMessages)
+                                await send(.appendMessage(localMessage.message, scrollViewProxy))
+                            }
+                        }
                     } catch {
                         let localMessage = try databaseManager.insert(
                             LocalMessage(

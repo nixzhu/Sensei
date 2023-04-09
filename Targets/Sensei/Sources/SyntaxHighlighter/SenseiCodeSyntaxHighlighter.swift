@@ -4,15 +4,11 @@ import MarkdownUI
 struct SenseiCodeSyntaxHighlighter: CodeSyntaxHighlighter {
     let colorScheme: ColorScheme
 
-    func highlightCode(_ content: String, language: String?) -> Text {
-        let fixedLanguage: String? = {
-            let language = language?.lowercased() ?? ""
-
-            return language.isEmpty ? nil : language
-        }()
+    func highlightCode(_ code: String, language: String?) -> Text {
+        let fixedLanguage = language?.lowercased()
 
         if let fixedLanguage, let attributedCode = PrismHighlighter.shared.highlight(
-            code: content,
+            code: code,
             language: fixedLanguage,
             colorPalette: {
                 switch colorScheme {
@@ -26,7 +22,7 @@ struct SenseiCodeSyntaxHighlighter: CodeSyntaxHighlighter {
             return Text(.init(attributedCode))
         }
 
-        return Text(content)
+        return Text(code)
     }
 }
 
