@@ -62,7 +62,7 @@ struct DetailView: View {
                 }
                 .overlay(alignment: .bottomTrailing) {
                     if !viewStore.input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        Text("**Shift+Enter** to Send")
+                        Text("**⇧ Enter** to Send")
                             .padding(.vertical, 4)
                             .padding(.horizontal, 8)
                             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 5))

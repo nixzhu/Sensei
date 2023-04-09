@@ -20,7 +20,7 @@ struct SenseiApp: App {
         }
         .commands {
             CommandGroup(after: .appInfo) {
-                Button("Settings") {
+                Button("Settings...") {
                     openWindow(id: "settings")
                 }
                 .keyboardShortcut(",", modifiers: .command)

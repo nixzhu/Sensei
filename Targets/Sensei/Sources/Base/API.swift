@@ -13,7 +13,7 @@ enum API {
         var errorDescription: String? {
             switch self {
             case .missingAPIKey:
-                return "Missing API key"
+                return "Missing API key, use `⌘ ,` to add one"
             case .invalidURL:
                 return "Invalid URL"
             case .networkFailed:
