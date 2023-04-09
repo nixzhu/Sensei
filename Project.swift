@@ -10,7 +10,15 @@ let project = Project(
             name: name,
             platform: .macOS,
             product: .app,
-            bundleId: "dev.nixzhu.\(name)",
+            bundleId: {
+                let bundleIDPrefix = Environment.bundleIDPrefix.getString(default: "")
+
+                if bundleIDPrefix.isEmpty {
+                    return "io.tuist.\(name)"
+                } else {
+                    return "\(bundleIDPrefix).\(name)"
+                }
+            }(),
             deploymentTarget: .macOS(targetVersion: "13.0"),
             infoPlist: .extendingDefault(with: [
                 "CFBundleShortVersionString": "0.3.0",
