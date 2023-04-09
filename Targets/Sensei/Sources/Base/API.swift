@@ -5,6 +5,7 @@ import CustomDump
 enum API {
     enum Error: Swift.Error, LocalizedError {
         case missingAPIKey
+        case invalidURL
         case networkFailed
         case invalidResponse(Int, String)
         case invalidContent(String)
@@ -13,6 +14,8 @@ enum API {
             switch self {
             case .missingAPIKey:
                 return "Missing API key"
+            case .invalidURL:
+                return "Invalid URL"
             case .networkFailed:
                 return "Network failed"
             case .invalidResponse(let statusCode, let errorCode):
@@ -47,9 +50,21 @@ extension API {
             throw Error.missingAPIKey
         }
 
-        var urlRequest = URLRequest(
-            url: .init(string: "https://api.openai.com/v1/chat/completions")!
-        )
+        let host: String = {
+            let customHost = Settings.customHost
+
+            if customHost.isEmpty {
+                return "api.openai.com"
+            } else {
+                return customHost
+            }
+        }()
+
+        guard let url = URL(string: "https://\(host)/v1/chat/completions") else {
+            throw Error.invalidURL
+        }
+
+        var urlRequest = URLRequest(url: url)
 
         urlRequest.httpMethod = "POST"
 

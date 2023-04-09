@@ -51,90 +51,109 @@ struct NewChatView: View {
             Text("New Chat")
                 .bold()
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text("API Key (Shared by all chats)")
+            Group {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Custom Host (Shared by all chats)")
 
-                TextField(
-                    "sk-",
-                    text: Settings.$apiKey
-                )
-                .textFieldStyle(.plain)
-                .padding(8)
-                .background(Color(light: .white, dark: .black))
-                .cornerRadius(5)
-            }
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Name")
-
-                TextField(
-                    "Name",
-                    text: $name
-                )
-                .textFieldStyle(.plain)
-                .padding(8)
-                .background(Color(light: .white, dark: .black))
-                .cornerRadius(5)
-            }
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Prompt")
-
-                InputEditor(
-                    placeholder: "Prompt",
-                    text: $prompt,
-                    onShiftEnter: {}
-                )
-                .padding(.horizontal, 4)
-                .padding(.vertical, 8)
-                .background(Color(.textBackgroundColor))
-                .cornerRadius(5)
-                .frame(height: 100)
-            }
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Model")
-
-                Picker(
-                    "",
-                    selection: $model
-                ) {
-                    ForEach(ChatGPTModel.allCases, id: \.self) { model in
-                        Text(model.rawValue).tag(model)
-                    }
+                    TextField(
+                        "api.openai.com",
+                        text: Settings.$customHost
+                    )
+                    .textFieldStyle(.plain)
+                    .padding(8)
+                    .background(Color(.textBackgroundColor))
+                    .cornerRadius(5)
                 }
-                .labelsHidden()
-                .padding(8)
-                .background(Color(light: .white, dark: .black))
-                .cornerRadius(5)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("API Key (Shared by all chats)")
+
+                    TextField(
+                        "sk-",
+                        text: Settings.$apiKey
+                    )
+                    .textFieldStyle(.plain)
+                    .padding(8)
+                    .background(Color(.textBackgroundColor))
+                    .cornerRadius(5)
+                }
             }
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Temperature (0-1)")
+            Divider()
 
-                TextField(
-                    "0.3",
-                    value: $temperature,
-                    formatter: temperatureFormatter
-                )
-                .textFieldStyle(.plain)
-                .padding(8)
-                .background(Color(light: .white, dark: .black))
-                .cornerRadius(5)
-            }
+            Group {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Name")
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Number of messages in context (0-10)")
+                    TextField(
+                        "Name",
+                        text: $name
+                    )
+                    .textFieldStyle(.plain)
+                    .padding(8)
+                    .background(Color(.textBackgroundColor))
+                    .cornerRadius(5)
+                }
 
-                TextField(
-                    "4",
-                    value: $numberOfMessagesInContext,
-                    formatter: numberFormatter
-                )
-                .textFieldStyle(.plain)
-                .padding(8)
-                .background(Color(light: .white, dark: .black))
-                .cornerRadius(5)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Prompt")
+
+                    InputEditor(
+                        placeholder: "Prompt",
+                        text: $prompt,
+                        onShiftEnter: {}
+                    )
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 8)
+                    .background(Color(.textBackgroundColor))
+                    .cornerRadius(5)
+                    .frame(height: 100)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Model")
+
+                    Picker(
+                        "",
+                        selection: $model
+                    ) {
+                        ForEach(ChatGPTModel.allCases, id: \.self) { model in
+                            Text(model.rawValue).tag(model)
+                        }
+                    }
+                    .labelsHidden()
+                    .padding(8)
+                    .background(Color(.textBackgroundColor))
+                    .cornerRadius(5)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Temperature (0-1)")
+
+                    TextField(
+                        "0.3",
+                        value: $temperature,
+                        formatter: temperatureFormatter
+                    )
+                    .textFieldStyle(.plain)
+                    .padding(8)
+                    .background(Color(.textBackgroundColor))
+                    .cornerRadius(5)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Number of messages in context (0-10)")
+
+                    TextField(
+                        "4",
+                        value: $numberOfMessagesInContext,
+                        formatter: numberFormatter
+                    )
+                    .textFieldStyle(.plain)
+                    .padding(8)
+                    .background(Color(.textBackgroundColor))
+                    .cornerRadius(5)
+                }
             }
 
             Spacer()
