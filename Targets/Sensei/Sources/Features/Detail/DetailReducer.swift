@@ -3,6 +3,7 @@ import ComposableArchitecture
 
 struct DetailReducer: ReducerProtocol {
     @Dependency(\.databaseManager) var databaseManager
+    @Dependency(\.continuousClock) var clock
 
     struct State: Equatable {
         var chat: Chat
@@ -33,6 +34,7 @@ struct DetailReducer: ReducerProtocol {
     }
 
     enum Action: Equatable {
+        case onAppear(ScrollViewProxy)
         case tryClearAllMessages
         case clearAllMessages
         case clearErrorMessages
@@ -43,6 +45,7 @@ struct DetailReducer: ReducerProtocol {
         case appendMessage(Message, ScrollViewProxy)
         case updateMessage(Message, ScrollViewProxy)
         case scrollToMessage(Message, ScrollViewProxy)
+        case scrollToLatestMessageIfCan(ScrollViewProxy)
         case markReceiving(ScrollViewProxy)
         case sendChatIfCan(ScrollViewProxy)
         case clearReceivingMessages
@@ -57,6 +60,12 @@ struct DetailReducer: ReducerProtocol {
     var body: some ReducerProtocol<State, Action> {
         Reduce { state, action in
             switch action {
+            case .onAppear(let scrollViewProxy):
+                return .run { send in
+                    try await clock.sleep(for: .seconds(0.05))
+
+                    await send.send(.scrollToLatestMessageIfCan(scrollViewProxy))
+                }
             case .tryClearAllMessages:
                 state.alert = .init(
                     title: { .init("Clear all messages?") },
@@ -181,8 +190,14 @@ struct DetailReducer: ReducerProtocol {
                         scrollViewProxy.scrollTo(message.id, anchor: .bottom)
                     }
 
-                    try await Task.sleep(seconds: 0.1)
+                    try await clock.sleep(for: .seconds(0.1))
                 }
+            case .scrollToLatestMessageIfCan(let scrollViewProxy):
+                if let message = state.messages.last {
+                    return .send(.scrollToMessage(message, scrollViewProxy))
+                }
+
+                return .none
             case .markReceiving(let scrollViewProxy):
                 let message = Message(
                     id: .init("receiving"),

@@ -28,26 +28,10 @@ struct DetailView: View {
                     }
                 }
                 .onAppear {
-                    Task {
-                        try await Task.sleep(seconds: 0.05)
-
-                        guard let message = viewStore.messages.last else { return }
-
-                        withAnimation {
-                            scrollViewProxy.scrollTo(message.id, anchor: .bottom)
-                        }
-                    }
+                    viewStore.send(.onAppear(scrollViewProxy))
                 }
                 .onChange(of: viewStore.chat.id) { _ in
-                    Task {
-                        try await Task.sleep(seconds: 0.05)
-
-                        guard let message = viewStore.messages.last else { return }
-
-                        withAnimation {
-                            scrollViewProxy.scrollTo(message.id, anchor: .bottom)
-                        }
-                    }
+                    viewStore.send(.onAppear(scrollViewProxy))
                 }
                 .overlay {
                     if viewStore.messages.isEmpty {
