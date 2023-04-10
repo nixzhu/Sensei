@@ -3,7 +3,6 @@ import ComposableArchitecture
 
 struct DetailReducer: ReducerProtocol {
     @Dependency(\.databaseManager) var databaseManager
-    @Dependency(\.continuousClock) var clock
 
     struct State: Equatable {
         var chat: Chat
@@ -62,8 +61,6 @@ struct DetailReducer: ReducerProtocol {
             switch action {
             case .onAppear(let scrollViewProxy):
                 return .run { send in
-                    try await clock.sleep(for: .seconds(0.05))
-
                     await send.send(.scrollToLatestMessageIfCan(scrollViewProxy))
                 }
             case .tryClearAllMessages:
@@ -189,8 +186,6 @@ struct DetailReducer: ReducerProtocol {
                     withAnimation {
                         scrollViewProxy.scrollTo(message.id, anchor: .bottom)
                     }
-
-                    try await clock.sleep(for: .seconds(0.1))
                 }
             case .scrollToLatestMessageIfCan(let scrollViewProxy):
                 if let message = state.messages.last {
