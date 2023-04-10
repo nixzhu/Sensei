@@ -31,7 +31,7 @@ struct DetailView: View {
                     viewStore.send(.onAppear(scrollViewProxy))
                 }
                 .onChange(of: viewStore.chat.id) { _ in
-                    viewStore.send(.scrollToLatestMessageIfCan(scrollViewProxy))
+                    viewStore.send(.onAppear(scrollViewProxy))
                 }
                 .overlay {
                     if viewStore.messages.isEmpty {
