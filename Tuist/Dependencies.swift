@@ -24,7 +24,7 @@ let dependencies = Dependencies(
         ),
         .remote(
             url: "https://github.com/gonzalezreal/swift-markdown-ui.git",
-            requirement: .upToNextMajor(from: "2.0.2")
+            requirement: .branch("add-content-to-block-configuration")
         ),
         .remote(
             url: "https://github.com/groue/GRDB.swift.git",
