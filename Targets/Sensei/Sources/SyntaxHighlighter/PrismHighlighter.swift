@@ -24,7 +24,7 @@ final class PrismHighlighter {
         language: String,
         colorPalette: ColorPalette
     ) -> NSAttributedString? {
-        guard !code.isEmpty else { return nil }
+        guard !code.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
         guard !language.isEmpty else { return nil }
 
         context.globalObject.setValue(code, forProperty: "nixInput")

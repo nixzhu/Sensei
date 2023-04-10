@@ -7,10 +7,8 @@ struct SenseiCodeSyntaxHighlighter: CodeSyntaxHighlighter {
     func highlightCode(_ code: String, language: String?) -> Text {
         let fixedLanguage = language?.lowercased()
 
-        if let fixedLanguage, let attributedCode = PrismHighlighter.shared.highlight(
-            code: code,
-            language: fixedLanguage,
-            colorPalette: {
+        if let fixedLanguage {
+            let colorPalette: ColorPalette = {
                 switch colorScheme {
                 case .dark:
                     return .dark
@@ -18,8 +16,14 @@ struct SenseiCodeSyntaxHighlighter: CodeSyntaxHighlighter {
                     return .light
                 }
             }()
-        ) {
-            return Text(.init(attributedCode))
+
+            if let attributedCode = PrismHighlighter.shared.highlight(
+                code: code,
+                language: fixedLanguage,
+                colorPalette: colorPalette
+            ) {
+                return Text(.init(attributedCode))
+            }
         }
 
         return Text(code)
