@@ -322,7 +322,10 @@ struct DetailReducer: ReducerProtocol {
                         }()
 
                         do {
-                            try databaseManager.deleteMessages(lastMessages.compactMap { $0.localMessage })
+                            try databaseManager.deleteMessages(
+                                lastMessages.compactMap { $0.localMessage }
+                            )
+
                             state.messages.removeLast(lastMessages.count)
                         } catch {
                             print("error:", error)
