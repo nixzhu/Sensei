@@ -2,6 +2,8 @@
 
 Sensei is a Mac app based on OpenAI API.
 
+![Screenshot](https://github.com/nixzhu/Sensei/raw/main/screenshot.png)
+
 ## Build
 
 To build Sensei, follow these steps:
