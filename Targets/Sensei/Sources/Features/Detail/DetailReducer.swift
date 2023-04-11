@@ -42,6 +42,7 @@ struct DetailReducer: ReducerProtocol {
         case sendInputIfCan(ScrollViewProxy)
         case appendMessage(Message, ScrollViewProxy)
         case updateMessage(Message, ScrollViewProxy)
+        case replaceReceivingMessageWithNewMessage(Message, ScrollViewProxy)
         case scrollToMessage(Message, ScrollViewProxy)
         case scrollToLatestMessageIfCan(ScrollViewProxy)
         case markReceiving(ScrollViewProxy)
@@ -151,6 +152,17 @@ struct DetailReducer: ReducerProtocol {
                 } else {
                     return .none
                 }
+            case .replaceReceivingMessageWithNewMessage(let message, let scrollViewProxy):
+                if message.chatID == state.chat.id {
+                    state.messages.removeAll(where: { $0.source == .receiving })
+                    state.messages.append(message)
+
+                    return .send(
+                        .scrollToMessage(message, scrollViewProxy)
+                    )
+                } else {
+                    return .none
+                }
             case .scrollToMessage(let message, let scrollViewProxy):
                 return .run { _ in
                     withAnimation {
@@ -241,8 +253,12 @@ struct DetailReducer: ReducerProtocol {
 
                                 receivingLocalMessage = localMessage
 
-                                await send(.clearReceivingMessages)
-                                await send(.appendMessage(localMessage.message, scrollViewProxy))
+                                await send(
+                                    .replaceReceivingMessageWithNewMessage(
+                                        localMessage.message,
+                                        scrollViewProxy
+                                    )
+                                )
                             }
                         }
                     } catch {
@@ -254,10 +270,12 @@ struct DetailReducer: ReducerProtocol {
                             )
                         )
 
-                        let message = localMessage.message
-
-                        await send(.clearReceivingMessages)
-                        await send(.appendMessage(message, scrollViewProxy))
+                        await send(
+                            .replaceReceivingMessageWithNewMessage(
+                                localMessage.message,
+                                scrollViewProxy
+                            )
+                        )
                     }
                 }
             case .clearReceivingMessages:
