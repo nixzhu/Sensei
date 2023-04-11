@@ -6,6 +6,7 @@ extension Theme {
         .code {
             FontFamilyVariant(.monospaced)
             FontSize(.em(0.94))
+            ForegroundColor(.purple)
         }
         .heading1 { configuration in
             configuration.label

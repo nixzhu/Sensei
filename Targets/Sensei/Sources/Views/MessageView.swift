@@ -52,10 +52,6 @@ struct MessageView: View {
                 )
                 .markdownTheme(.sensei)
                 .markdownCodeSyntaxHighlighter(.sensei(colorScheme: colorScheme))
-                .markdownTextStyle(\.code) {
-                    ForegroundColor(.purple)
-                    BackgroundColor(.purple.opacity(0.1))
-                }
                 .textSelection(.enabled)
                 .padding(.vertical, 8)
                 .padding(.horizontal, 12)
