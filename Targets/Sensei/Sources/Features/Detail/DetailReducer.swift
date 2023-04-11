@@ -38,10 +38,8 @@ struct DetailReducer: ReducerProtocol {
         case tryClearAllMessages
         case clearAllMessages
         case clearErrorMessages
-        case clearFromBottomToThisMessage(Message)
         case updateInput(String)
         case sendInputIfCan(ScrollViewProxy)
-        case retryChatIfCan(ScrollViewProxy)
         case appendMessage(Message, ScrollViewProxy)
         case updateMessage(Message, ScrollViewProxy)
         case scrollToMessage(Message, ScrollViewProxy)
@@ -98,29 +96,6 @@ struct DetailReducer: ReducerProtocol {
                 }
 
                 return .none
-            case .clearFromBottomToThisMessage(let targetMessage):
-                let lastMessages: [Message] = {
-                    var messages: [Message] = []
-
-                    for message in state.messages.reversed() {
-                        messages.append(message)
-
-                        if message.id == targetMessage.id {
-                            break
-                        }
-                    }
-
-                    return messages
-                }()
-
-                do {
-                    try databaseManager.deleteMessages(lastMessages.compactMap { $0.localMessage })
-                    state.messages.removeLast(lastMessages.count)
-                } catch {
-                    print("error:", error)
-                }
-
-                return .none
             case .updateInput(let newInput):
                 state.input = newInput
                 return .none
@@ -155,14 +130,6 @@ struct DetailReducer: ReducerProtocol {
                 } catch {
                     print("error:", error)
                     return .none
-                }
-            case .retryChatIfCan(let scrollViewProxy):
-                guard !state.messages.isEmpty else { return .none }
-
-                return .run { send in
-                    await send(.clearErrorMessages)
-                    await send(.markReceiving(scrollViewProxy))
-                    await send(.sendChatIfCan(scrollViewProxy))
                 }
             case .appendMessage(let message, let scrollViewProxy):
                 if message.chatID == state.chat.id {
@@ -339,13 +306,38 @@ struct DetailReducer: ReducerProtocol {
             case .messageRow(let id, let action):
                 switch action {
                 case .clearFromBottomToThisMessage:
-                    if let message = state.messages[id: id] {
-                        return .send(.clearFromBottomToThisMessage(message))
+                    if let targetMessage = state.messages[id: id] {
+                        let lastMessages: [Message] = {
+                            var messages: [Message] = []
+
+                            for message in state.messages.reversed() {
+                                messages.append(message)
+
+                                if message.id == targetMessage.id {
+                                    break
+                                }
+                            }
+
+                            return messages
+                        }()
+
+                        do {
+                            try databaseManager.deleteMessages(lastMessages.compactMap { $0.localMessage })
+                            state.messages.removeLast(lastMessages.count)
+                        } catch {
+                            print("error:", error)
+                        }
                     }
 
                     return .none
                 case .retryChatIfCan(let scrollViewProxy):
-                    return .send(.retryChatIfCan(scrollViewProxy))
+                    guard !state.messages.isEmpty else { return .none }
+
+                    return .run { send in
+                        await send(.clearErrorMessages)
+                        await send(.markReceiving(scrollViewProxy))
+                        await send(.sendChatIfCan(scrollViewProxy))
+                    }
                 case .copyMessage:
                     return .none
                 }
