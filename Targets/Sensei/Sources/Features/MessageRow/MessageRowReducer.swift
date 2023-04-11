@@ -5,7 +5,7 @@ import ComposableArchitecture
 struct MessageRowReducer: Reducer {
     enum Action: Equatable {
         case clearFromBottomToThisMessage
-        case retryChatIfCan(ScrollViewProxy)
+        case retryChatIfCan
         case copyMessage
     }
 

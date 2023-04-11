@@ -8,6 +8,7 @@ struct AppReducer: Reducer {
         var chats: IdentifiedArrayOf<Chat>
         var currentChatID: Chat.ID?
         var chatMessages: [Chat.ID: IdentifiedArrayOf<Message>]
+        var messageIDToScrollTo: Message.ID?
         var input: String
         var isNewChatPresented: Bool
         var isEditChatPresented: Bool
@@ -43,6 +44,7 @@ struct AppReducer: Reducer {
                     return .init(
                         chat: chat,
                         messages: chatMessages[chat.id] ?? [],
+                        messageIDToScrollTo: messageIDToScrollTo,
                         input: input,
                         isEditChatPresented: isEditChatPresented,
                         isTextModeEnabled: isTextModeEnabled,
@@ -58,6 +60,7 @@ struct AppReducer: Reducer {
                     let chat = newValue.chat
                     chats[id: chat.id] = chat
                     chatMessages[chat.id] = newValue.messages
+                    messageIDToScrollTo = newValue.messageIDToScrollTo
                     input = newValue.input
                     isEditChatPresented = newValue.isEditChatPresented
                     isTextModeEnabled = newValue.isTextModeEnabled
@@ -144,7 +147,7 @@ struct AppReducer: Reducer {
                 switch action {
                 case .updateChat:
                     state.chats.sort(by: { $0.updatedAt > $1.updatedAt })
-                case .appendMessage(let message, _):
+                case .appendMessage(let message):
                     if var chat = state.chats[id: message.chatID] {
                         chat.updatedAt = .init()
 

@@ -20,14 +20,21 @@ struct DetailView: View {
                             action: DetailReducer.Action.messageRow(id:action:)
                         )
                     ) {
-                        MessageRowView(store: $0, scrollViewProxy: scrollViewProxy)
+                        MessageRowView(store: $0)
                     }
                 }
                 .onAppear {
-                    viewStore.send(.onAppear(scrollViewProxy))
+                    viewStore.send(.onAppear)
                 }
                 .onChange(of: viewStore.chat.id) { _ in
-                    viewStore.send(.onAppear(scrollViewProxy))
+                    viewStore.send(.onAppear)
+                }
+                .onChange(of: viewStore.messageIDToScrollTo) { id in
+                    if let id {
+                        withAnimation {
+                            scrollViewProxy.scrollTo(id, anchor: .bottom)
+                        }
+                    }
                 }
                 .overlay {
                     if viewStore.messages.isEmpty {
@@ -57,7 +64,7 @@ struct DetailView: View {
                                 guard !(last.source == .breaker), !(last.source == .receiving)
                                 else { return }
 
-                                viewStore.send(.breakChat(scrollViewProxy))
+                                viewStore.send(.breakChat)
                             } label: {
                                 Image(systemName: "fish")
                                     .frame(height: 44)
@@ -70,7 +77,7 @@ struct DetailView: View {
                             placeholder: "What's in your mind?",
                             text: viewStore.binding(get: \.input, send: { .updateInput($0) }),
                             onShiftEnter: {
-                                viewStore.send(.sendInputIfCan(scrollViewProxy))
+                                viewStore.send(.sendInputIfCan)
                             }
                         )
                         .focused($focusedField, equals: .input)

@@ -8,6 +8,7 @@ struct DetailReducer: Reducer {
     struct State: Equatable {
         var chat: Chat
         var messages: IdentifiedArrayOf<Message>
+        var messageIDToScrollTo: Message.ID?
         var input: String
         var isEditChatPresented: Bool
         var isTextModeEnabled: Bool
@@ -34,24 +35,24 @@ struct DetailReducer: Reducer {
     }
 
     enum Action: Equatable {
-        case onAppear(ScrollViewProxy)
+        case onAppear
         case tryClearAllMessages
         case clearAllMessages
         case clearErrorMessages
         case updateInput(String)
-        case sendInputIfCan(ScrollViewProxy)
-        case appendMessage(Message, ScrollViewProxy)
-        case updateMessage(Message, ScrollViewProxy)
-        case replaceReceivingMessageWithNewMessage(Message, ScrollViewProxy)
-        case scrollToMessage(Message, ScrollViewProxy)
-        case scrollToLatestMessageIfCan(ScrollViewProxy)
-        case markReceiving(ScrollViewProxy)
-        case sendChatIfCan(ScrollViewProxy)
+        case sendInputIfCan
+        case appendMessage(Message)
+        case updateMessage(Message)
+        case replaceReceivingMessageWithNewMessage(Message)
+        case scrollToMessage(Message)
+        case scrollToLatestMessageIfCan
+        case markReceiving
+        case sendChatIfCan
         case updateEditChatPresented(Bool)
         case updateChat(Chat)
         case toggleTextModeEnabled
         case updateFileExporterPresented(Bool)
-        case breakChat(ScrollViewProxy)
+        case breakChat
         case dismissAlert
         case messageRow(id: MessageRowReducer.State.ID, action: MessageRowReducer.Action)
     }
@@ -59,10 +60,10 @@ struct DetailReducer: Reducer {
     var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
-            case .onAppear(let scrollViewProxy):
+            case .onAppear:
                 return .run { send in
                     try await clock.sleep(for: .seconds(0.25))
-                    await send.send(.scrollToLatestMessageIfCan(scrollViewProxy))
+                    await send.send(.scrollToLatestMessageIfCan)
                 }
             case .tryClearAllMessages:
                 state.alert = .init(
@@ -99,7 +100,7 @@ struct DetailReducer: Reducer {
             case .updateInput(let newInput):
                 state.input = newInput
                 return .none
-            case .sendInputIfCan(let scrollViewProxy):
+            case .sendInputIfCan:
                 guard !state.messages.contains(where: { $0.source == .receiving }) else {
                     return .none
                 }
@@ -123,58 +124,58 @@ struct DetailReducer: Reducer {
 
                     return .run { send in
                         await send(.updateInput(""))
-                        await send(.appendMessage(message, scrollViewProxy))
-                        await send(.markReceiving(scrollViewProxy))
-                        await send(.sendChatIfCan(scrollViewProxy))
+                        await send(.appendMessage(message))
+                        await send(.markReceiving)
+                        await send(.sendChatIfCan)
                     }
                 } catch {
                     print("error:", error)
                     return .none
                 }
-            case .appendMessage(let message, let scrollViewProxy):
+            case .appendMessage(let message):
                 if message.chatID == state.chat.id {
                     state.messages.append(message)
 
                     return .send(
-                        .scrollToMessage(message, scrollViewProxy)
+                        .scrollToMessage(message)
                     )
                 } else {
                     return .none
                 }
-            case .updateMessage(let message, let scrollViewProxy):
+            case .updateMessage(let message):
                 if message.chatID == state.chat.id {
                     state.messages[id: message.id] = message
 
                     return .send(
-                        .scrollToMessage(message, scrollViewProxy)
+                        .scrollToMessage(message)
                     )
                 } else {
                     return .none
                 }
-            case .replaceReceivingMessageWithNewMessage(let message, let scrollViewProxy):
+            case .replaceReceivingMessageWithNewMessage(let message):
                 if message.chatID == state.chat.id {
                     state.messages.removeAll(where: { $0.source == .receiving })
                     state.messages.append(message)
 
                     return .send(
-                        .scrollToMessage(message, scrollViewProxy)
+                        .scrollToMessage(message)
                     )
                 } else {
                     return .none
                 }
-            case .scrollToMessage(let message, let scrollViewProxy):
-                return .run { _ in
-                    withAnimation {
-                        scrollViewProxy.scrollTo(message.id, anchor: .bottom)
-                    }
-                }
-            case .scrollToLatestMessageIfCan(let scrollViewProxy):
-                if let message = state.messages.last {
-                    return .send(.scrollToMessage(message, scrollViewProxy))
+            case .scrollToMessage(let message):
+                if message.chatID == state.chat.id {
+                    state.messageIDToScrollTo = message.id
                 }
 
                 return .none
-            case .markReceiving(let scrollViewProxy):
+            case .scrollToLatestMessageIfCan:
+                if let message = state.messages.last {
+                    return .send(.scrollToMessage(message))
+                }
+
+                return .none
+            case .markReceiving:
                 let message = Message(
                     id: .init("receiving"),
                     chatID: state.chat.id,
@@ -183,9 +184,9 @@ struct DetailReducer: Reducer {
                 )
 
                 return .send(
-                    .appendMessage(message, scrollViewProxy)
+                    .appendMessage(message)
                 )
-            case .sendChatIfCan(let scrollViewProxy):
+            case .sendChatIfCan:
                 let chat = state.chat
 
                 let latestPartMessages: [Message] = {
@@ -240,7 +241,7 @@ struct DetailReducer: Reducer {
 
                                 receivingLocalMessage = localMessage
 
-                                await send(.updateMessage(localMessage.message, scrollViewProxy))
+                                await send(.updateMessage(localMessage.message))
                             } else {
                                 let localMessage = try databaseManager.insert(
                                     LocalMessage(
@@ -254,8 +255,7 @@ struct DetailReducer: Reducer {
 
                                 await send(
                                     .replaceReceivingMessageWithNewMessage(
-                                        localMessage.message,
-                                        scrollViewProxy
+                                        localMessage.message
                                     )
                                 )
                             }
@@ -271,8 +271,7 @@ struct DetailReducer: Reducer {
 
                         await send(
                             .replaceReceivingMessageWithNewMessage(
-                                localMessage.message,
-                                scrollViewProxy
+                                localMessage.message
                             )
                         )
                     }
@@ -295,7 +294,7 @@ struct DetailReducer: Reducer {
             case .updateFileExporterPresented(let isPresented):
                 state.isFileExporterPresented = isPresented
                 return .none
-            case .breakChat(let scrollViewProxy):
+            case .breakChat:
                 do {
                     let localMessage = try databaseManager.insert(
                         LocalMessage(
@@ -308,7 +307,7 @@ struct DetailReducer: Reducer {
                     let message = localMessage.message
 
                     return .send(
-                        .appendMessage(message, scrollViewProxy)
+                        .appendMessage(message)
                     )
                 } catch {
                     print("error:", error)
@@ -347,13 +346,13 @@ struct DetailReducer: Reducer {
                     }
 
                     return .none
-                case .retryChatIfCan(let scrollViewProxy):
+                case .retryChatIfCan:
                     guard !state.messages.isEmpty else { return .none }
 
                     return .run { send in
                         await send(.clearErrorMessages)
-                        await send(.markReceiving(scrollViewProxy))
-                        await send(.sendChatIfCan(scrollViewProxy))
+                        await send(.markReceiving)
+                        await send(.sendChatIfCan)
                     }
                 case .copyMessage:
                     return .none

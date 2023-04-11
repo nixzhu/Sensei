@@ -4,7 +4,6 @@ import MarkdownUI
 
 struct MessageRowView: View {
     let store: StoreOf<MessageRowReducer>
-    let scrollViewProxy: ScrollViewProxy
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
@@ -92,7 +91,7 @@ struct MessageRowView: View {
                             )
 
                             Button {
-                                viewStore.send(.retryChatIfCan(scrollViewProxy))
+                                viewStore.send(.retryChatIfCan)
                             } label: {
                                 Image(systemName: "arrow.triangle.2.circlepath")
                             }
@@ -136,59 +135,53 @@ struct MessageRowView: View {
 struct MessageRowView_Previews: PreviewProvider {
     static var previews: some View {
         List {
-            ScrollViewReader { scrollViewProxy in
-                MessageRowView(
-                    store: .init(
-                        initialState: .init(
-                            id: .init("1"),
-                            chatID: .init(1),
-                            source: .me,
-                            content: "Hello"
-                        ),
-                        reducer: MessageRowReducer()
+            MessageRowView(
+                store: .init(
+                    initialState: .init(
+                        id: .init("1"),
+                        chatID: .init(1),
+                        source: .me,
+                        content: "Hello"
                     ),
-                    scrollViewProxy: scrollViewProxy
+                    reducer: MessageRowReducer()
                 )
+            )
 
-                MessageRowView(
-                    store: .init(
-                        initialState: .init(
-                            id: .init("2"),
-                            chatID: .init(1),
-                            source: .sensei,
-                            content: "How do you do?"
-                        ),
-                        reducer: MessageRowReducer()
+            MessageRowView(
+                store: .init(
+                    initialState: .init(
+                        id: .init("2"),
+                        chatID: .init(1),
+                        source: .sensei,
+                        content: "How do you do?"
                     ),
-                    scrollViewProxy: scrollViewProxy
+                    reducer: MessageRowReducer()
                 )
+            )
 
-                MessageRowView(
-                    store: .init(
-                        initialState: .init(
-                            id: .init("3"),
-                            chatID: .init(1),
-                            source: .error,
-                            content: "Error"
-                        ),
-                        reducer: MessageRowReducer()
+            MessageRowView(
+                store: .init(
+                    initialState: .init(
+                        id: .init("3"),
+                        chatID: .init(1),
+                        source: .error,
+                        content: "Error"
                     ),
-                    scrollViewProxy: scrollViewProxy
+                    reducer: MessageRowReducer()
                 )
+            )
 
-                MessageRowView(
-                    store: .init(
-                        initialState: .init(
-                            id: .init("4"),
-                            chatID: .init(1),
-                            source: .receiving,
-                            content: ""
-                        ),
-                        reducer: MessageRowReducer()
+            MessageRowView(
+                store: .init(
+                    initialState: .init(
+                        id: .init("4"),
+                        chatID: .init(1),
+                        source: .receiving,
+                        content: ""
                     ),
-                    scrollViewProxy: scrollViewProxy
+                    reducer: MessageRowReducer()
                 )
-            }
+            )
         }
         .frame(width: 400, height: 400)
     }
