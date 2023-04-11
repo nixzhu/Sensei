@@ -47,7 +47,6 @@ struct DetailReducer: ReducerProtocol {
         case scrollToLatestMessageIfCan(ScrollViewProxy)
         case markReceiving(ScrollViewProxy)
         case sendChatIfCan(ScrollViewProxy)
-        case clearReceivingMessages
         case updateEditChatPresented(Bool)
         case updateChat(Chat)
         case toggleTextModeEnabled
@@ -278,9 +277,6 @@ struct DetailReducer: ReducerProtocol {
                         )
                     }
                 }
-            case .clearReceivingMessages:
-                state.messages.removeAll(where: { $0.source == .receiving })
-                return .none
             case .updateEditChatPresented(let isPresented):
                 state.isEditChatPresented = isPresented
                 return .none
