@@ -1,7 +1,7 @@
 import SwiftUI
 import ComposableArchitecture
 
-struct AppReducer: ReducerProtocol {
+struct AppReducer: Reducer {
     @Dependency(\.databaseManager) var databaseManager
 
     struct State: Equatable {
@@ -99,7 +99,7 @@ struct AppReducer: ReducerProtocol {
         case detail(DetailReducer.Action)
     }
 
-    var body: some ReducerProtocol<State, Action> {
+    var body: some Reducer<State, Action> {
         Scope(state: \.sidebar, action: /Action.sidebar) {
             SidebarReducer()
         }

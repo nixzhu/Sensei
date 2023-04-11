@@ -8,7 +8,7 @@ let dependencies = Dependencies(
         ),
         .remote(
             url: "https://github.com/pointfreeco/swift-composable-architecture.git",
-            requirement: .upToNextMajor(from: "0.52.0")
+            requirement: .branch("prerelease/1.0")
         ),
         .remote(
             url: "https://github.com/pointfreeco/swift-custom-dump.git",

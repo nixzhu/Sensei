@@ -1,7 +1,7 @@
 import SwiftUI
 import ComposableArchitecture
 
-struct SidebarReducer: ReducerProtocol {
+struct SidebarReducer: Reducer {
     @Dependency(\.databaseManager) var databaseManager
 
     struct State: Equatable {
@@ -20,7 +20,7 @@ struct SidebarReducer: ReducerProtocol {
         case dismissAlert
     }
 
-    var body: some ReducerProtocol<State, Action> {
+    var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
             case .selectChat(let chat):

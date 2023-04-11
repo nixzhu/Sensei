@@ -1,7 +1,7 @@
 import SwiftUI
 import ComposableArchitecture
 
-struct DetailReducer: ReducerProtocol {
+struct DetailReducer: Reducer {
     @Dependency(\.databaseManager) var databaseManager
     @Dependency(\.continuousClock) var clock
 
@@ -56,7 +56,7 @@ struct DetailReducer: ReducerProtocol {
         case messageRow(id: MessageRowReducer.State.ID, action: MessageRowReducer.Action)
     }
 
-    var body: some ReducerProtocol<State, Action> {
+    var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
             case .onAppear(let scrollViewProxy):
