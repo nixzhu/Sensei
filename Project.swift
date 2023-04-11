@@ -34,7 +34,6 @@ let project = Project(
                 .external(name: "ComposableArchitecture"),
                 .external(name: "CustomDump"),
                 .external(name: "Tagged"),
-                .external(name: "IdentifiedCollections"),
                 .external(name: "MarkdownUI"),
                 .external(name: "GRDB"),
             ]

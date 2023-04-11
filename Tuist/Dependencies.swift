@@ -19,10 +19,6 @@ let dependencies = Dependencies(
             requirement: .upToNextMajor(from: "0.10.0")
         ),
         .remote(
-            url: "https://github.com/pointfreeco/swift-identified-collections.git",
-            requirement: .upToNextMajor(from: "0.7.1")
-        ),
-        .remote(
             url: "https://github.com/gonzalezreal/swift-markdown-ui.git",
             requirement: .branch("add-content-to-block-configuration")
         ),
