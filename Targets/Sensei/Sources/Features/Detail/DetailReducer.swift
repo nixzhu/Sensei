@@ -15,12 +15,12 @@ struct DetailReducer: ReducerProtocol {
         var alert: AlertState<Action>?
 
         var chatContent: String {
-            messages.compactMap { (message: Message) -> String? in
-                switch message.source {
+            messages.compactMap {
+                switch $0.source {
                 case .me:
-                    return "## \(message.content)"
+                    return "## \($0.content)"
                 case .sensei:
-                    return message.content
+                    return $0.content
                 case .error:
                     return nil
                 case .breaker:
@@ -38,7 +38,7 @@ struct DetailReducer: ReducerProtocol {
         case tryClearAllMessages
         case clearAllMessages
         case clearErrorMessages
-        case clearToMessage(Message)
+        case clearFromBottomToThisMessage(Message)
         case updateInput(String)
         case sendInputIfCan(ScrollViewProxy)
         case retryChatIfCan(ScrollViewProxy)
@@ -55,6 +55,7 @@ struct DetailReducer: ReducerProtocol {
         case updateFileExporterPresented(Bool)
         case breakChat(ScrollViewProxy)
         case dismissAlert
+        case messageRow(id: MessageRowReducer.State.ID, action: MessageRowReducer.Action)
     }
 
     var body: some ReducerProtocol<State, Action> {
@@ -97,7 +98,7 @@ struct DetailReducer: ReducerProtocol {
                 }
 
                 return .none
-            case .clearToMessage(let targetMessage):
+            case .clearFromBottomToThisMessage(let targetMessage):
                 let lastMessages: [Message] = {
                     var messages: [Message] = []
 
@@ -335,7 +336,23 @@ struct DetailReducer: ReducerProtocol {
             case .dismissAlert:
                 state.alert = nil
                 return .none
+            case .messageRow(let id, let action):
+                switch action {
+                case .clearFromBottomToThisMessage:
+                    if let message = state.messages[id: id] {
+                        return .send(.clearFromBottomToThisMessage(message))
+                    }
+
+                    return .none
+                case .retryChatIfCan(let scrollViewProxy):
+                    return .send(.retryChatIfCan(scrollViewProxy))
+                case .copyMessage:
+                    return .none
+                }
             }
+        }
+        .forEach(\.messages, action: /Action.messageRow) {
+            MessageRowReducer()
         }
     }
 }

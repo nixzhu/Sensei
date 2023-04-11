@@ -14,17 +14,13 @@ struct DetailView: View {
         WithViewStore(store, observe: { $0 }) { viewStore in
             ScrollViewReader { scrollViewProxy in
                 List {
-                    ForEach(viewStore.messages) { message in
-                        MessageView(
-                            message: message,
-                            clearAction: {
-                                viewStore.send(.clearToMessage(message))
-                            },
-                            retryAction: {
-                                viewStore.send(.retryChatIfCan(scrollViewProxy))
-                            }
+                    ForEachStore(
+                        store.scope(
+                            state: \.messages,
+                            action: DetailReducer.Action.messageRow(id:action:)
                         )
-                        .id(message.id)
+                    ) {
+                        MessageRowView(store: $0, scrollViewProxy: scrollViewProxy)
                     }
                 }
                 .onAppear {
