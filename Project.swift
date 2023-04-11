@@ -21,8 +21,28 @@ let project = Project(
             }(),
             deploymentTarget: .macOS(targetVersion: "13.0"),
             infoPlist: .extendingDefault(with: [
-                "CFBundleShortVersionString": "0.3.0",
-                "CFBundleVersion": "9",
+                "CFBundleShortVersionString": .string(
+                    {
+                        let string = Environment.version.getString(default: "")
+
+                        if string.isEmpty {
+                            return "0.3.0"
+                        } else {
+                            return string
+                        }
+                    }()
+                ),
+                "CFBundleVersion": .string(
+                    {
+                        let string = Environment.build.getString(default: "")
+
+                        if string.isEmpty {
+                            return "9"
+                        } else {
+                            return string
+                        }
+                    }()
+                ),
                 "NSMainStoryboardFile": "",
                 "UILaunchStoryboardName": "LaunchScreen",
                 "NSHumanReadableCopyright": "Copyright @nixzhu. All rights reserved.",
