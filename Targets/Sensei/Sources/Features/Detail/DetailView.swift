@@ -13,16 +13,21 @@ struct DetailView: View {
     var body: some View {
         WithViewStore(store, observe: { $0 }) { viewStore in
             ScrollViewReader { scrollViewProxy in
-                List {
-                    ForEachStore(
-                        store.scope(
-                            state: \.messages,
-                            action: DetailReducer.Action.messageRow(id:action:)
-                        )
-                    ) {
-                        MessageRowView(store: $0)
+                ScrollView {
+                    LazyVStack {
+                        ForEachStore(
+                            store.scope(
+                                state: \.messages,
+                                action: DetailReducer.Action.messageRow(id:action:)
+                            )
+                        ) {
+                            MessageRowView(store: $0)
+                        }
                     }
+                    .padding(.horizontal)
+                    .padding(.top, 10)
                 }
+                .background(Color(.textBackgroundColor))
                 .onChange(of: viewStore.messageIDToScrollTo) { id in
                     if let id {
                         withAnimation {
