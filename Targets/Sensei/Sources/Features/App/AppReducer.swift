@@ -145,6 +145,8 @@ struct AppReducer: Reducer {
                             state.chatMessages[chat.id] = .init(
                                 uniqueElements: localMessages.map { $0.message }
                             )
+
+                            state.messageIDToScrollTo = nil
                         } catch {
                             print("error:", error)
                         }
