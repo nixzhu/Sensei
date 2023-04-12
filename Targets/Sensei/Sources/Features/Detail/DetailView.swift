@@ -23,12 +23,6 @@ struct DetailView: View {
                         MessageRowView(store: $0)
                     }
                 }
-                .onAppear {
-                    viewStore.send(.onAppear)
-                }
-                .onChange(of: viewStore.chat.id) { _ in
-                    viewStore.send(.onAppear)
-                }
                 .onChange(of: viewStore.messageIDToScrollTo) { id in
                     if let id {
                         withAnimation {

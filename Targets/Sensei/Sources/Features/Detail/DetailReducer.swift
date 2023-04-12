@@ -36,7 +36,6 @@ struct DetailReducer: Reducer {
     }
 
     enum Action: Equatable {
-        case onAppear
         case tryClearAllMessages
         case clearAllMessages
         case clearErrorMessages
@@ -46,7 +45,6 @@ struct DetailReducer: Reducer {
         case updateMessage(Message)
         case replaceReceivingMessageWithNewMessage(Message)
         case scrollToMessage(Message)
-        case scrollToLatestMessageIfCan
         case markReceiving
         case sendChatIfCan
         case updateEditChatPresented(Bool)
@@ -61,11 +59,6 @@ struct DetailReducer: Reducer {
     var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
-            case .onAppear:
-                return .run { send in
-                    try await clock.sleep(for: .seconds(0.25))
-                    await send.send(.scrollToLatestMessageIfCan)
-                }
             case .tryClearAllMessages:
                 state.alert = .init(
                     title: { .init("Clear all messages?") },
@@ -100,6 +93,7 @@ struct DetailReducer: Reducer {
                 return .none
             case .updateInput(let newInput):
                 state.input = newInput
+                state.messageIDToScrollTo = state.messages.last?.id
                 return .none
             case .sendInputIfCan:
                 guard !state.messages.contains(where: { $0.source == .receiving }) else {
@@ -167,12 +161,6 @@ struct DetailReducer: Reducer {
             case .scrollToMessage(let message):
                 if message.chatID == state.chat.id {
                     state.messageIDToScrollTo = message.id
-                }
-
-                return .none
-            case .scrollToLatestMessageIfCan:
-                if let message = state.messages.last {
-                    return .send(.scrollToMessage(message))
                 }
 
                 return .none
