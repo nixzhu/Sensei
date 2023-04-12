@@ -5,6 +5,7 @@ import MarkdownUI
 struct MessageRowView: View {
     let store: StoreOf<MessageRowReducer>
     @Environment(\.colorScheme) private var colorScheme
+    @State private var over = false
 
     var body: some View {
         WithViewStore(store, observe: { $0 }) { viewStore in
@@ -12,7 +13,27 @@ struct MessageRowView: View {
                 switch viewStore.source {
                 case .me:
                     HStack(spacing: 0) {
-                        Spacer(minLength: 44)
+                        Spacer(minLength: 20)
+
+                        Button {
+                            viewStore.send(.clearFromBottomToThisMessage)
+                        } label: {
+                            Image(systemName: "xmark")
+                                .opacity(over ? 1 : 0)
+                        }
+                        .help("Clear from bottom to this message")
+                        .buttonStyle(.borderless)
+                        .padding(.trailing, 10)
+
+                        Button {
+                            viewStore.send(.copyMessage)
+                        } label: {
+                            Image(systemName: "doc.on.doc")
+                                .opacity(over ? 1 : 0)
+                        }
+                        .help("Copy")
+                        .buttonStyle(.borderless)
+                        .padding(.trailing, 10)
 
                         Text(
                             viewStore.content
@@ -29,21 +50,6 @@ struct MessageRowView: View {
                             )
                             .foregroundColor(.accentColor.opacity(0.05))
                         )
-                    }
-                    .contextMenu {
-                        Button {
-                            viewStore.send(.copyMessage)
-                        } label: {
-                            Label("Copy", systemImage: "doc.on.doc")
-                        }
-
-                        Divider()
-
-                        Button {
-                            viewStore.send(.clearFromBottomToThisMessage)
-                        } label: {
-                            Label("Clear from bottom to this message", systemImage: "xmark")
-                        }
                     }
                 case .sensei:
                     HStack(spacing: 0) {
@@ -63,14 +69,17 @@ struct MessageRowView: View {
                             .foregroundColor(.gray.opacity(0.05))
                         )
 
-                        Spacer(minLength: 44)
-                    }
-                    .contextMenu {
                         Button {
                             viewStore.send(.copyMessage)
                         } label: {
-                            Label("Copy", systemImage: "doc.on.doc")
+                            Image(systemName: "doc.on.doc")
+                                .opacity(over ? 1 : 0)
                         }
+                        .help("Copy")
+                        .buttonStyle(.borderless)
+                        .padding(.leading, 10)
+
+                        Spacer(minLength: 20)
                     }
                 case .error:
                     HStack(spacing: 0) {
@@ -99,7 +108,7 @@ struct MessageRowView: View {
                             .help("Retry")
                         }
 
-                        Spacer(minLength: 44)
+                        Spacer(minLength: 20)
                     }
                 case .breaker:
                     HStack(spacing: 2) {
@@ -123,9 +132,12 @@ struct MessageRowView: View {
                                 .foregroundColor(.gray.opacity(0.05))
                             )
 
-                        Spacer(minLength: 44)
+                        Spacer()
                     }
                 }
+            }
+            .onHover {
+                over = $0
             }
             .id(viewStore.id)
         }
