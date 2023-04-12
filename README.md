@@ -6,7 +6,7 @@ Sensei is a Mac app based on OpenAI API.
 
 ## Build
 
-To build Sensei, follow these steps:
+To build Sensei, make sure you have Xcode 14.3 installed, follow these steps:
 
 - Clone this repository.
 - Install [Tuist](https://docs.tuist.io/tutorial/get-started) if needed.
