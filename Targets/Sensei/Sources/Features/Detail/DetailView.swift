@@ -14,18 +14,22 @@ struct DetailView: View {
         WithViewStore(store, observe: { $0 }) { viewStore in
             ScrollViewReader { scrollViewProxy in
                 ScrollView {
-                    VStack {
-                        ForEachStore(
-                            store.scope(
-                                state: \.messages,
-                                action: DetailReducer.Action.messageRow(id:action:)
-                            )
-                        ) {
-                            MessageRowView(store: $0)
+                    ZStack {
+                        Color.clear
+
+                        VStack {
+                            ForEachStore(
+                                store.scope(
+                                    state: \.messages,
+                                    action: DetailReducer.Action.messageRow(id:action:)
+                                )
+                            ) {
+                                MessageRowView(store: $0)
+                            }
                         }
+                        .padding(.horizontal)
+                        .padding(.top, 10)
                     }
-                    .padding(.horizontal)
-                    .padding(.top, 10)
                 }
                 .background(Color(.textBackgroundColor))
                 .onChange(of: viewStore.messageIDToScrollTo) { id in
