@@ -9,6 +9,7 @@ struct DetailReducer: Reducer {
         var chat: Chat
         var messages: IdentifiedArrayOf<Message>
         var messageIDToScrollTo: Message.ID?
+        var enterToSend: Bool
         var input: String
         var isEditChatPresented: Bool
         var isTextModeEnabled: Bool

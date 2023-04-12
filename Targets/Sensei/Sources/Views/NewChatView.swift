@@ -71,7 +71,8 @@ struct NewChatView: View {
                     InputEditor(
                         placeholder: "Prompt",
                         text: $prompt,
-                        onShiftEnter: {}
+                        enterToSend: nil,
+                        newlineAction: nil
                     )
                     .padding(.horizontal, 4)
                     .padding(.vertical, 8)

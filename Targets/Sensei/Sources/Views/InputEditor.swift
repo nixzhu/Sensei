@@ -4,13 +4,15 @@ import AppKit
 struct InputEditor: View {
     let placeholder: String
     @Binding var text: String
-    let onShiftEnter: () -> Void
+    let enterToSend: Bool?
+    let newlineAction: (() -> Void)?
 
     var body: some View {
         CustomTextEditor(
             placeholder: placeholder,
             text: $text,
-            onShiftEnter: onShiftEnter
+            enterToSend: enterToSend,
+            newlineAction: newlineAction
         )
     }
 }
@@ -18,7 +20,8 @@ struct InputEditor: View {
 private struct CustomTextEditor: NSViewRepresentable {
     let placeholder: String
     @Binding var text: String
-    let onShiftEnter: () -> Void
+    let enterToSend: Bool?
+    let newlineAction: (() -> Void)?
 
     func makeNSView(context: Context) -> NSScrollView {
         let textView = CustomTextView()
@@ -39,7 +42,9 @@ private struct CustomTextEditor: NSViewRepresentable {
         textView.isVerticallyResizable = true
         textView.isHorizontallyResizable = false
 
-        textView.onShiftEnter = onShiftEnter
+        textView.string = text
+        textView.enterToSend = enterToSend
+        textView.newlineAction = newlineAction
         textView.delegate = context.coordinator
 
         let scrollView = NSScrollView()
@@ -54,6 +59,8 @@ private struct CustomTextEditor: NSViewRepresentable {
         guard let textView = nsView.documentView as? CustomTextView else { return }
 
         textView.string = text
+        textView.enterToSend = enterToSend
+        textView.newlineAction = newlineAction
 
         guard !context.coordinator.selectedRanges.isEmpty else { return }
 
@@ -82,12 +89,25 @@ private struct CustomTextEditor: NSViewRepresentable {
 }
 
 private class CustomTextView: NSTextView {
-    var onShiftEnter: (() -> Void)?
+    var enterToSend: Bool?
+    var newlineAction: (() -> Void)?
     @objc var placeholderAttributedString: NSAttributedString?
 
     override func insertNewline(_ sender: Any?) {
-        if NSEvent.modifierFlags.contains(.shift) {
-            onShiftEnter?()
+        if let enterToSend, let newlineAction {
+            if enterToSend {
+                if NSEvent.modifierFlags.contains(.shift) {
+                    super.insertNewline(sender)
+                } else {
+                    newlineAction()
+                }
+            } else {
+                if NSEvent.modifierFlags.contains(.shift) {
+                    newlineAction()
+                } else {
+                    super.insertNewline(sender)
+                }
+            }
         } else {
             super.insertNewline(sender)
         }

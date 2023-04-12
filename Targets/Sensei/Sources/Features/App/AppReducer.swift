@@ -5,6 +5,7 @@ struct AppReducer: Reducer {
     @Dependency(\.databaseManager) var databaseManager
 
     struct State: Equatable {
+        var settings: SettingsReducer.State
         var chats: IdentifiedArrayOf<Chat>
         var currentChatID: Chat.ID?
         var chatMessages: [Chat.ID: IdentifiedArrayOf<Message>]
@@ -45,6 +46,7 @@ struct AppReducer: Reducer {
                         chat: chat,
                         messages: chatMessages[chat.id] ?? [],
                         messageIDToScrollTo: messageIDToScrollTo,
+                        enterToSend: settings.enterToSend,
                         input: input,
                         isEditChatPresented: isEditChatPresented,
                         isTextModeEnabled: isTextModeEnabled,
@@ -61,6 +63,7 @@ struct AppReducer: Reducer {
                     chats[id: chat.id] = chat
                     chatMessages[chat.id] = newValue.messages
                     messageIDToScrollTo = newValue.messageIDToScrollTo
+                    settings.enterToSend = newValue.enterToSend
                     input = newValue.input
                     isEditChatPresented = newValue.isEditChatPresented
                     isTextModeEnabled = newValue.isTextModeEnabled
@@ -71,6 +74,12 @@ struct AppReducer: Reducer {
         }
 
         init(databaseManager: DatabaseManager) {
+            settings = .init(
+                customHost: Settings.customHost,
+                apiKey: Settings.apiKey,
+                enterToSend: Settings.enterToSend
+            )
+
             do {
                 let localChats = try databaseManager.chats()
 
@@ -98,11 +107,16 @@ struct AppReducer: Reducer {
     }
 
     enum Action: Equatable {
+        case settings(SettingsReducer.Action)
         case sidebar(SidebarReducer.Action)
         case detail(DetailReducer.Action)
     }
 
     var body: some Reducer<State, Action> {
+        Scope(state: \.settings, action: /Action.settings) {
+            SettingsReducer()
+        }
+
         Scope(state: \.sidebar, action: /Action.sidebar) {
             SidebarReducer()
         }
@@ -112,6 +126,15 @@ struct AppReducer: Reducer {
 
         Reduce { state, action in
             switch action {
+            case .settings(let action):
+                switch action {
+                case .updateCustomHost(let customHost):
+                    Settings.customHost = customHost
+                case .updateAPIKey(let apiKey):
+                    Settings.apiKey = apiKey
+                case .updateEnterToSend(let enterToSend):
+                    Settings.enterToSend = enterToSend
+                }
             case .sidebar(let action):
                 switch action {
                 case .selectChat(let chat):

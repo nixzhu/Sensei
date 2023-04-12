@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import ComposableArchitecture
 
 @main
 struct SenseiApp: App {
@@ -8,15 +9,15 @@ struct SenseiApp: App {
     @Environment(\.openURL) private var openURL
 
     var body: some Scene {
+        let store: StoreOf<AppReducer> = .init(
+            initialState: .init(
+                databaseManager: .shared
+            ),
+            reducer: AppReducer()
+        )
+
         WindowGroup {
-            AppView(
-                store: .init(
-                    initialState: .init(
-                        databaseManager: .shared
-                    ),
-                    reducer: AppReducer()
-                )
-            )
+            AppView(store: store)
         }
         .commands {
             CommandGroup(after: .appInfo) {
@@ -35,7 +36,12 @@ struct SenseiApp: App {
         }
 
         Window("Settings", id: "settings") {
-            SettingsView()
+            SettingsView(
+                store: store.scope(
+                    state: \.settings,
+                    action: { .settings($0) }
+                )
+            )
         }
     }
 }

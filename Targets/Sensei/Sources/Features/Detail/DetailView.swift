@@ -49,11 +49,24 @@ struct DetailView: View {
                 }
                 .overlay(alignment: .bottomTrailing) {
                     if !viewStore.input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        Text("**⇧ Enter** to Send")
-                            .padding(.vertical, 4)
-                            .padding(.horizontal, 8)
-                            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 5))
-                            .padding(.horizontal, 8)
+                        Text(
+                            { () -> AttributedString in
+                                if viewStore.enterToSend {
+                                    return try! .init(
+                                        markdown: "**Enter** to Send, **⇧ Enter** for Newline"
+                                    )
+
+                                } else {
+                                    return try! .init(
+                                        markdown: "**⇧Enter** to Send, **Enter** for Newline"
+                                    )
+                                }
+                            }()
+                        )
+                        .padding(.vertical, 4)
+                        .padding(.horizontal, 8)
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 5))
+                        .padding(.horizontal, 8)
                     }
                 }
                 .safeAreaInset(edge: .bottom) {
@@ -76,7 +89,8 @@ struct DetailView: View {
                         InputEditor(
                             placeholder: "What's in your mind?",
                             text: viewStore.binding(get: \.input, send: { .updateInput($0) }),
-                            onShiftEnter: {
+                            enterToSend: viewStore.enterToSend,
+                            newlineAction: {
                                 viewStore.send(.sendInputIfCan)
                             }
                         )
@@ -220,6 +234,7 @@ struct DetailView_Previews: PreviewProvider {
                             content: "你好，我能怎么帮助你？"
                         ),
                     ],
+                    enterToSend: true,
                     input: "",
                     isEditChatPresented: false,
                     isTextModeEnabled: false,
