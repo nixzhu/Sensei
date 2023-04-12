@@ -14,7 +14,7 @@ struct DetailView: View {
         WithViewStore(store, observe: { $0 }) { viewStore in
             ScrollViewReader { scrollViewProxy in
                 ScrollView {
-                    LazyVStack {
+                    VStack {
                         ForEachStore(
                             store.scope(
                                 state: \.messages,

@@ -91,9 +91,15 @@ struct DetailReducer: Reducer {
                 }
 
                 return .none
-            case .updateInput(let newInput):
-                state.input = newInput
-                state.messageIDToScrollTo = state.messages.last?.id
+            case .updateInput(let input):
+                state.input = input
+
+                if input.isEmpty {
+                    state.messageIDToScrollTo = nil
+                } else {
+                    state.messageIDToScrollTo = state.messages.last?.id
+                }
+
                 return .none
             case .sendInputIfCan:
                 guard !state.messages.contains(where: { $0.source == .receiving }) else {
