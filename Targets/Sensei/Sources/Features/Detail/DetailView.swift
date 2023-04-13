@@ -86,7 +86,7 @@ struct DetailView: View {
                                     .frame(height: 44)
                             }
                             .buttonStyle(.borderless)
-                            .help("Break this chat")
+                            .help("Forget all history")
                         }
 
                         InputEditor(
