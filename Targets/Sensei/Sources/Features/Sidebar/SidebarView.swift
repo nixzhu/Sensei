@@ -7,22 +7,18 @@ struct SidebarView: View {
     var body: some View {
         WithViewStore(store, observe: { $0 }) { viewStore in
             List(
-                viewStore.chats,
                 selection: viewStore.binding(
                     get: \.currentChat,
                     send: { .selectChat($0) }
                 )
-            ) { chat in
-                Text(
-                    chat.name
-                )
-                .tag(chat)
-                .contextMenu {
-                    Button {
-                        viewStore.send(.tryDeleteChat(chat))
-                    } label: {
-                        Label("Delete", systemImage: "trash")
-                    }
+            ) {
+                ForEachStore(
+                    store.scope(
+                        state: \.chats,
+                        action: SidebarReducer.Action.chatRow(id:action:)
+                    )
+                ) {
+                    ChatRowView(store: $0)
                 }
             }
             .toolbar {

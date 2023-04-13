@@ -18,6 +18,7 @@ struct SidebarReducer: Reducer {
         case updateNewChatPresented(Bool)
         case createNewChat(LocalChat)
         case dismissAlert
+        case chatRow(id: ChatRowReducer.State.ID, action: ChatRowReducer.Action)
     }
 
     var body: some Reducer<State, Action> {
@@ -67,7 +68,29 @@ struct SidebarReducer: Reducer {
             case .dismissAlert:
                 state.alert = nil
                 return .none
+            case .chatRow(let id, let action):
+                if let chat = state.chats[id: id] {
+                    switch action {
+                    case .tryDeleteChat:
+                        state.alert = .init(
+                            title: { .init("Delete \(chat.name)?") },
+                            actions: {
+                                ButtonState<Action>.cancel(.init("Cancel"))
+
+                                ButtonState<Action>.destructive(
+                                    .init("Delete"),
+                                    action: .send(.deleteChat(chat))
+                                )
+                            }
+                        )
+                    }
+                }
+
+                return .none
             }
+        }
+        .forEach(\.chats, action: /Action.chatRow) {
+            ChatRowReducer()
         }
     }
 }
