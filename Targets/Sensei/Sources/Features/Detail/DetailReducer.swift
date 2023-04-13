@@ -39,6 +39,7 @@ struct DetailReducer: Reducer {
         case tryClearAllMessages
         case clearAllMessages
         case clearErrorMessages
+        case clearFromBottomToThisMessage(Message)
         case updateInput(String)
         case sendInputIfCan
         case appendMessage(Message)
@@ -89,6 +90,34 @@ struct DetailReducer: Reducer {
                 } catch {
                     print("error:", error)
                 }
+
+                return .none
+            case .clearFromBottomToThisMessage(let targetMessage):
+                let lastMessages: [Message] = {
+                    var messages: [Message] = []
+
+                    for message in state.messages.reversed() {
+                        messages.append(message)
+
+                        if message.id == targetMessage.id {
+                            break
+                        }
+                    }
+
+                    return messages
+                }()
+
+                do {
+                    try databaseManager.deleteMessages(
+                        lastMessages.compactMap { $0.localMessage }
+                    )
+
+                    state.messages.removeLast(lastMessages.count)
+                } catch {
+                    print("error:", error)
+                }
+
+                state.messageIDToScrollTo = state.messages.last?.id
 
                 return .none
             case .updateInput(let input):
@@ -313,31 +342,19 @@ struct DetailReducer: Reducer {
                 return .none
             case .messageRow(let id, let action):
                 switch action {
-                case .clearFromBottomToThisMessage:
+                case .tryClearFromBottomToThisMessage:
                     if let targetMessage = state.messages[id: id] {
-                        let lastMessages: [Message] = {
-                            var messages: [Message] = []
+                        state.alert = .init(
+                            title: { .init("Clear from bottom to this message?") },
+                            actions: {
+                                ButtonState<Action>.cancel(.init("Cancel"))
 
-                            for message in state.messages.reversed() {
-                                messages.append(message)
-
-                                if message.id == targetMessage.id {
-                                    break
-                                }
+                                ButtonState<Action>.destructive(
+                                    .init("Clear"),
+                                    action: .send(.clearFromBottomToThisMessage(targetMessage))
+                                )
                             }
-
-                            return messages
-                        }()
-
-                        do {
-                            try databaseManager.deleteMessages(
-                                lastMessages.compactMap { $0.localMessage }
-                            )
-
-                            state.messages.removeLast(lastMessages.count)
-                        } catch {
-                            print("error:", error)
-                        }
+                        )
                     }
 
                     return .none

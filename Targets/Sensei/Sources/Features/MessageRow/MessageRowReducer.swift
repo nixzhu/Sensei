@@ -4,7 +4,7 @@ import ComposableArchitecture
 
 struct MessageRowReducer: Reducer {
     enum Action: Equatable {
-        case clearFromBottomToThisMessage
+        case tryClearFromBottomToThisMessage
         case retryChatIfCan
         case copyMessage
     }
@@ -12,7 +12,7 @@ struct MessageRowReducer: Reducer {
     var body: some Reducer<Message, Action> {
         Reduce { state, action in
             switch action {
-            case .clearFromBottomToThisMessage:
+            case .tryClearFromBottomToThisMessage:
                 return .none
             case .retryChatIfCan:
                 return .none

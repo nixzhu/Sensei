@@ -16,7 +16,7 @@ struct MessageRowView: View {
                         Spacer(minLength: 20)
 
                         Button {
-                            viewStore.send(.clearFromBottomToThisMessage)
+                            viewStore.send(.tryClearFromBottomToThisMessage)
                         } label: {
                             Image(systemName: "xmark")
                                 .opacity(over ? 1 : 0)
