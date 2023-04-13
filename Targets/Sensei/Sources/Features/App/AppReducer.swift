@@ -112,7 +112,7 @@ struct AppReducer: Reducer {
         case detail(DetailReducer.Action)
     }
 
-    var body: some Reducer<State, Action> {
+    var body: some ReducerOf<Self> {
         Scope(state: \.settings, action: /Action.settings) {
             SettingsReducer()
         }

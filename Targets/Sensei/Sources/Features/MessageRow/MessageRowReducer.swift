@@ -3,13 +3,15 @@ import AppKit
 import ComposableArchitecture
 
 struct MessageRowReducer: Reducer {
+    typealias State = Message
+
     enum Action: Equatable {
         case tryClearFromBottomToThisMessage
         case retryChatIfCan
         case copyMessage
     }
 
-    var body: some Reducer<Message, Action> {
+    var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
             case .tryClearFromBottomToThisMessage:

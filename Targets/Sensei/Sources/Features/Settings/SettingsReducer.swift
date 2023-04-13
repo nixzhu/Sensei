@@ -14,7 +14,7 @@ struct SettingsReducer: Reducer {
         case updateEnterToSend(Bool)
     }
 
-    var body: some Reducer<State, Action> {
+    var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
             case .updateCustomHost(let customHost):

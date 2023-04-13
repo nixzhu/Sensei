@@ -21,7 +21,7 @@ struct SidebarReducer: Reducer {
         case chatRow(id: ChatRowReducer.State.ID, action: ChatRowReducer.Action)
     }
 
-    var body: some Reducer<State, Action> {
+    var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
             case .selectChat(let chat):

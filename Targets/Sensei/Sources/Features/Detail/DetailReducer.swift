@@ -57,7 +57,7 @@ struct DetailReducer: Reducer {
         case messageRow(id: MessageRowReducer.State.ID, action: MessageRowReducer.Action)
     }
 
-    var body: some Reducer<State, Action> {
+    var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
             case .tryClearAllMessages:
