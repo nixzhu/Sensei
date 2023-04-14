@@ -8,7 +8,7 @@ struct DetailReducer: Reducer {
     struct State: Equatable {
         var chat: Chat
         var messages: IdentifiedArrayOf<Message>
-        var messageIDToScrollTo: Message.ID?
+        var animatedMessageIDToScrollTo: AnimatedMessageIDToScrollTo?
         var enterToSend: Bool
         var input: String
         var isEditChatPresented: Bool
@@ -40,6 +40,7 @@ struct DetailReducer: Reducer {
         case clearAllMessages
         case clearErrorMessages
         case clearFromBottomToThisMessage(Message)
+        case resetAnimatedMessageIDToScrollTo
         case updateInput(String)
         case sendInputIfCan
         case appendMessage(Message)
@@ -117,16 +118,31 @@ struct DetailReducer: Reducer {
                     print("error:", error)
                 }
 
-                state.messageIDToScrollTo = state.messages.last?.id
+                if let messageID = state.messages.last?.id {
+                    state.animatedMessageIDToScrollTo = .init(
+                        animated: true,
+                        messageID: messageID,
+                        anchor: .bottom
+                    )
+                }
 
+                return .none
+            case .resetAnimatedMessageIDToScrollTo:
+                state.animatedMessageIDToScrollTo = nil
                 return .none
             case .updateInput(let input):
                 state.input = input
 
                 if input.isEmpty {
-                    state.messageIDToScrollTo = nil
+                    state.animatedMessageIDToScrollTo = nil
                 } else {
-                    state.messageIDToScrollTo = state.messages.last?.id
+                    if let messageID = state.messages.last?.id {
+                        state.animatedMessageIDToScrollTo = .init(
+                            animated: true,
+                            messageID: messageID,
+                            anchor: .bottom
+                        )
+                    }
                 }
 
                 return .none
@@ -195,7 +211,11 @@ struct DetailReducer: Reducer {
                 }
             case .scrollToMessage(let message):
                 if message.chatID == state.chat.id {
-                    state.messageIDToScrollTo = message.id
+                    state.animatedMessageIDToScrollTo = .init(
+                        animated: true,
+                        messageID: message.id,
+                        anchor: .bottom
+                    )
                 }
 
                 return .none

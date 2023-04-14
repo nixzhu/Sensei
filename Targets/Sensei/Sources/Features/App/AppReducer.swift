@@ -9,7 +9,7 @@ struct AppReducer: Reducer {
         var chats: IdentifiedArrayOf<Chat>
         var currentChatID: Chat.ID?
         var chatMessages: [Chat.ID: IdentifiedArrayOf<Message>]
-        var messageIDToScrollTo: Message.ID?
+        var animatedMessageIDToScrollTo: AnimatedMessageIDToScrollTo?
         var input: String
         var isNewChatPresented: Bool
         var isEditChatPresented: Bool
@@ -45,7 +45,7 @@ struct AppReducer: Reducer {
                     return .init(
                         chat: chat,
                         messages: chatMessages[chat.id] ?? [],
-                        messageIDToScrollTo: messageIDToScrollTo,
+                        animatedMessageIDToScrollTo: animatedMessageIDToScrollTo,
                         enterToSend: settings.enterToSend,
                         input: input,
                         isEditChatPresented: isEditChatPresented,
@@ -62,7 +62,7 @@ struct AppReducer: Reducer {
                     let chat = newValue.chat
                     chats[id: chat.id] = chat
                     chatMessages[chat.id] = newValue.messages
-                    messageIDToScrollTo = newValue.messageIDToScrollTo
+                    animatedMessageIDToScrollTo = newValue.animatedMessageIDToScrollTo
                     settings.enterToSend = newValue.enterToSend
                     input = newValue.input
                     isEditChatPresented = newValue.isEditChatPresented
@@ -142,11 +142,19 @@ struct AppReducer: Reducer {
                         do {
                             let localMessages = try databaseManager.messages(of: chat.localChat)
 
+                            let messages = localMessages.map { $0.message }
+
                             state.chatMessages[chat.id] = .init(
-                                uniqueElements: localMessages.map { $0.message }
+                                uniqueElements: messages
                             )
 
-                            state.messageIDToScrollTo = nil
+                            if let messageID = messages.last?.id {
+                                state.animatedMessageIDToScrollTo = .init(
+                                    animated: false,
+                                    messageID: messageID,
+                                    anchor: .bottom
+                                )
+                            }
                         } catch {
                             print("error:", error)
                         }
