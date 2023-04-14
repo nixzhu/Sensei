@@ -48,7 +48,7 @@ struct MessageRowView: View {
                                 cornerRadius: 10,
                                 style: .continuous
                             )
-                            .foregroundColor(.accentColor.opacity(0.05))
+                            .foregroundColor(.accentColor.opacity(over ? 0.1 : 0.05))
                         )
                     }
                 case .sensei:
@@ -66,7 +66,7 @@ struct MessageRowView: View {
                                 cornerRadius: 10,
                                 style: .continuous
                             )
-                            .foregroundColor(.gray.opacity(0.05))
+                            .foregroundColor(.gray.opacity(over ? 0.1 : 0.05))
                         )
 
                         Button {
@@ -96,7 +96,7 @@ struct MessageRowView: View {
                                     cornerRadius: 10,
                                     style: .continuous
                                 )
-                                .foregroundColor(.red.opacity(0.05))
+                                .foregroundColor(.red.opacity(over ? 0.1 : 0.05))
                             )
 
                             Button {
@@ -112,13 +112,13 @@ struct MessageRowView: View {
                     }
                 case .breaker:
                     HStack(spacing: 2) {
-                        Color.gray.opacity(0.35).frame(height: 1)
+                        Color.gray.opacity(over ? 0.5 : 0.35).frame(height: 1)
 
                         Image(systemName: "fish")
                         Image(systemName: "fish")
                         Image(systemName: "fish")
 
-                        Color.gray.opacity(0.35).frame(height: 1)
+                        Color.gray.opacity(over ? 0.5 : 0.35).frame(height: 1)
                     }
                 case .receiving:
                     HStack(spacing: 0) {
@@ -129,7 +129,7 @@ struct MessageRowView: View {
                                     cornerRadius: 10,
                                     style: .continuous
                                 )
-                                .foregroundColor(.gray.opacity(0.05))
+                                .foregroundColor(.gray.opacity(over ? 0.1 : 0.05))
                             )
 
                         Spacer()
