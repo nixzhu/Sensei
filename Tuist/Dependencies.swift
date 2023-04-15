@@ -20,7 +20,7 @@ let dependencies = Dependencies(
         ),
         .remote(
             url: "https://github.com/gonzalezreal/swift-markdown-ui.git",
-            requirement: .branch("main")
+            requirement: .upToNextMajor(from: "2.1.0")
         ),
         .remote(
             url: "https://github.com/groue/GRDB.swift.git",
