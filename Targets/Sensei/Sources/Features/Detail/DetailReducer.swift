@@ -20,9 +20,9 @@ struct DetailReducer: Reducer {
             messages.compactMap {
                 switch $0.source {
                 case .me:
-                    return "## \($0.content)"
+                    return "🙂 \($0.content)"
                 case .sensei:
-                    return $0.content
+                    return "🤖 \($0.content)"
                 case .error:
                     return nil
                 case .breaker:
