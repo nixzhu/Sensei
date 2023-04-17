@@ -56,7 +56,29 @@ let project = Project(
                 .external(name: "Tagged"),
                 .external(name: "MarkdownUI"),
                 .external(name: "GRDB"),
-            ]
+            ],
+            settings: .settings(
+                base: {
+                    SettingsDictionary()
+                        .strictConcurrencyChecking(.complete)
+                }(),
+                defaultSettings: .recommended
+            )
         ),
     ]
 )
+
+extension Dictionary where Key == String, Value == SettingValue {
+    enum StrictConcurrencyChecking: String {
+        case minimal
+        case targeted
+        case complete
+    }
+
+    func strictConcurrencyChecking(_ value: StrictConcurrencyChecking) -> SettingsDictionary {
+        var info = self
+        info["SWIFT_STRICT_CONCURRENCY"] = .string(value.rawValue)
+
+        return info
+    }
+}
