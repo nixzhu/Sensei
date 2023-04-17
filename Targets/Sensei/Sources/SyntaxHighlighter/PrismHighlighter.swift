@@ -38,6 +38,8 @@ final class PrismHighlighter {
 
         guard let html = result?.toString() else { return nil }
 
+        guard html != "undefined" else { return nil }
+
         return Converter(html: html, colorPalette: colorPalette).attributedString
     }
 }
