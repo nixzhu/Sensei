@@ -58,24 +58,33 @@ let project = Project(
                 .external(name: "GRDB"),
             ],
             settings: .settings(
-                base: {
-                    SettingsDictionary()
-                        .strictConcurrencyChecking(.complete)
-                }(),
+                base: .init()
+                    .swiftStrictConcurrency(.complete)
+                    .otherSwiftFlags( // https://www.fline.dev/preparing-for-swift-6/
+                        """
+                        -enable-upcoming-feature BareSlashRegexLiterals
+                        -enable-upcoming-feature ConciseMagicFile
+                        -enable-upcoming-feature ExistentialAny
+                        -enable-upcoming-feature ImplicitOpenExistentials
+                        -enable-upcoming-feature StrictConcurrency
+                        -warn-concurrency
+                        -enable-actor-data-race-checks
+                        """
+                    ),
                 defaultSettings: .recommended
             )
         ),
     ]
 )
 
-extension Dictionary where Key == String, Value == SettingValue {
-    enum StrictConcurrencyChecking: String {
+extension SettingsDictionary {
+    enum SwiftStrictConcurrency: String {
         case minimal
         case targeted
         case complete
     }
 
-    func strictConcurrencyChecking(_ value: StrictConcurrencyChecking) -> SettingsDictionary {
+    func swiftStrictConcurrency(_ value: SwiftStrictConcurrency) -> SettingsDictionary {
         var info = self
         info["SWIFT_STRICT_CONCURRENCY"] = .string(value.rawValue)
 
