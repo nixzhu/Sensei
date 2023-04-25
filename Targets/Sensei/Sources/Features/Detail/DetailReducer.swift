@@ -3,7 +3,6 @@ import ComposableArchitecture
 
 struct DetailReducer: Reducer {
     @Dependency(\.databaseManager) var databaseManager
-    @Dependency(\.continuousClock) var clock
 
     struct State: Equatable {
         var chat: Chat
@@ -79,6 +78,7 @@ struct DetailReducer: Reducer {
                 do {
                     try databaseManager.clearMessages(of: state.chat.localChat)
                     state.messages = []
+                    state.isTextModeEnabled = false
                 } catch {
                     print("error:", error)
                 }
