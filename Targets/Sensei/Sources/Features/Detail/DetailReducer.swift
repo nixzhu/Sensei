@@ -7,7 +7,7 @@ struct DetailReducer: Reducer {
     struct State: Equatable {
         var chat: Chat
         var messages: IdentifiedArrayOf<Message>
-        var animatedMessageIDToScrollTo: AnimatedMessageIDToScrollTo?
+        var animatedMessageToScrollTo: AnimatedMessageToScrollTo?
         var enterToSend: Bool
         var input: String
         var isEditChatPresented: Bool
@@ -39,13 +39,13 @@ struct DetailReducer: Reducer {
         case clearAllMessages
         case clearErrorMessages
         case clearFromBottomToThisMessage(Message)
-        case resetAnimatedMessageIDToScrollTo
+        case resetAnimatedMessageToScrollTo
         case updateInput(String)
         case sendInputIfCan
         case appendMessage(Message)
         case updateMessage(Message)
         case replaceReceivingMessageWithNewMessage(Message)
-        case scrollToMessage(Message)
+        case scrollToMessageAnimated(Message, Bool)
         case markReceiving
         case sendChatIfCan
         case updateEditChatPresented(Bool)
@@ -118,33 +118,18 @@ struct DetailReducer: Reducer {
                     print("error:", error)
                 }
 
-                if let messageID = state.messages.last?.id {
-                    state.animatedMessageIDToScrollTo = .init(
-                        animated: true,
-                        messageID: messageID,
-                        anchor: .bottom
+                if let message = state.messages.last {
+                    return .send(
+                        .scrollToMessageAnimated(message, true)
                     )
                 }
 
                 return .none
-            case .resetAnimatedMessageIDToScrollTo:
-                state.animatedMessageIDToScrollTo = nil
+            case .resetAnimatedMessageToScrollTo:
+                state.animatedMessageToScrollTo = nil
                 return .none
             case .updateInput(let input):
                 state.input = input
-
-                if input.isEmpty {
-                    state.animatedMessageIDToScrollTo = nil
-                } else {
-                    if let messageID = state.messages.last?.id {
-                        state.animatedMessageIDToScrollTo = .init(
-                            animated: true,
-                            messageID: messageID,
-                            anchor: .bottom
-                        )
-                    }
-                }
-
                 return .none
             case .sendInputIfCan:
                 guard !state.messages.contains(where: { $0.source == .receiving }) else {
@@ -183,7 +168,7 @@ struct DetailReducer: Reducer {
                     state.messages.append(message)
 
                     return .send(
-                        .scrollToMessage(message)
+                        .scrollToMessageAnimated(message, true)
                     )
                 } else {
                     return .none
@@ -193,7 +178,7 @@ struct DetailReducer: Reducer {
                     state.messages[id: message.id] = message
 
                     return .send(
-                        .scrollToMessage(message)
+                        .scrollToMessageAnimated(message, false)
                     )
                 } else {
                     return .none
@@ -204,16 +189,16 @@ struct DetailReducer: Reducer {
                     state.messages.append(message)
 
                     return .send(
-                        .scrollToMessage(message)
+                        .scrollToMessageAnimated(message, true)
                     )
                 } else {
                     return .none
                 }
-            case .scrollToMessage(let message):
+            case .scrollToMessageAnimated(let message, let animated):
                 if message.chatID == state.chat.id {
-                    state.animatedMessageIDToScrollTo = .init(
-                        animated: true,
-                        messageID: message.id,
+                    state.animatedMessageToScrollTo = .init(
+                        animated: animated,
+                        message: message,
                         anchor: .bottom
                     )
                 }

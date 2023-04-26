@@ -9,7 +9,7 @@ struct AppReducer: Reducer {
         var chats: IdentifiedArrayOf<Chat>
         var currentChatID: Chat.ID?
         var chatMessages: [Chat.ID: IdentifiedArrayOf<Message>]
-        var animatedMessageIDToScrollTo: AnimatedMessageIDToScrollTo?
+        var animatedMessageToScrollTo: AnimatedMessageToScrollTo?
         var input: String
         var isNewChatPresented: Bool
         var isEditChatPresented: Bool
@@ -45,7 +45,7 @@ struct AppReducer: Reducer {
                     return .init(
                         chat: chat,
                         messages: chatMessages[chat.id] ?? [],
-                        animatedMessageIDToScrollTo: animatedMessageIDToScrollTo,
+                        animatedMessageToScrollTo: animatedMessageToScrollTo,
                         enterToSend: settings.enterToSend,
                         input: input,
                         isEditChatPresented: isEditChatPresented,
@@ -62,7 +62,7 @@ struct AppReducer: Reducer {
                     let chat = newValue.chat
                     chats[id: chat.id] = chat
                     chatMessages[chat.id] = newValue.messages
-                    animatedMessageIDToScrollTo = newValue.animatedMessageIDToScrollTo
+                    animatedMessageToScrollTo = newValue.animatedMessageToScrollTo
                     settings.enterToSend = newValue.enterToSend
                     input = newValue.input
                     isEditChatPresented = newValue.isEditChatPresented
@@ -148,10 +148,10 @@ struct AppReducer: Reducer {
                                 uniqueElements: messages
                             )
 
-                            if let messageID = messages.last?.id {
-                                state.animatedMessageIDToScrollTo = .init(
+                            if let message = messages.last {
+                                state.animatedMessageToScrollTo = .init(
                                     animated: false,
-                                    messageID: messageID,
+                                    message: message,
                                     anchor: .bottom
                                 )
                             }

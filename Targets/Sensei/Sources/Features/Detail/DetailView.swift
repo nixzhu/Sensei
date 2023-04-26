@@ -32,17 +32,17 @@ struct DetailView: View {
                     }
                 }
                 .background(Color(.textBackgroundColor))
-                .onChange(of: viewStore.animatedMessageIDToScrollTo) { value in
+                .onChange(of: viewStore.animatedMessageToScrollTo) { value in
                     if let value {
                         if value.animated {
                             withAnimation {
-                                scrollViewProxy.scrollTo(value.messageID, anchor: value.anchor)
+                                scrollViewProxy.scrollTo(value.message.id, anchor: value.anchor)
                             }
                         } else {
-                            scrollViewProxy.scrollTo(value.messageID, anchor: value.anchor)
+                            scrollViewProxy.scrollTo(value.message.id, anchor: value.anchor)
                         }
 
-                        viewStore.send(.resetAnimatedMessageIDToScrollTo)
+                        viewStore.send(.resetAnimatedMessageToScrollTo)
                     }
                 }
                 .overlay {
