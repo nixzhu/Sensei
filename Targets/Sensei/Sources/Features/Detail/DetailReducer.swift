@@ -97,7 +97,7 @@ struct DetailReducer: Reducer {
                 let lastMessages: [Message] = {
                     var messages: [Message] = []
 
-                    for message in state.messages.reversed() {
+                    for message in state.messages {
                         messages.append(message)
 
                         if message.id == targetMessage.id {
@@ -113,15 +113,9 @@ struct DetailReducer: Reducer {
                         lastMessages.compactMap { $0.localMessage }
                     )
 
-                    state.messages.removeLast(lastMessages.count)
+                    state.messages.removeFirst(lastMessages.count)
                 } catch {
                     print("error:", error)
-                }
-
-                if let message = state.messages.last {
-                    return .send(
-                        .scrollToMessageAnimated(message, true)
-                    )
                 }
 
                 return .none
@@ -165,41 +159,37 @@ struct DetailReducer: Reducer {
                 }
             case .appendMessage(let message):
                 if message.chatID == state.chat.id {
-                    state.messages.append(message)
+                    state.messages.insert(message, at: 0)
 
                     return .send(
                         .scrollToMessageAnimated(message, true)
                     )
-                } else {
-                    return .none
                 }
+
+                return .none
             case .updateMessage(let message):
                 if message.chatID == state.chat.id {
                     state.messages[id: message.id] = message
-
-                    return .send(
-                        .scrollToMessageAnimated(message, false)
-                    )
-                } else {
-                    return .none
                 }
+
+                return .none
             case .replaceReceivingMessageWithNewMessage(let message):
                 if message.chatID == state.chat.id {
                     state.messages.removeAll(where: { $0.source == .receiving })
-                    state.messages.append(message)
+                    state.messages.insert(message, at: 0)
 
-                    return .send(
-                        .scrollToMessageAnimated(message, true)
-                    )
-                } else {
-                    return .none
+                    return .run { send in
+                        await send(.scrollToMessageAnimated(message, true))
+                    }
                 }
+
+                return .none
             case .scrollToMessageAnimated(let message, let animated):
                 if message.chatID == state.chat.id {
                     state.animatedMessageToScrollTo = .init(
                         animated: animated,
                         message: message,
-                        anchor: .bottom
+                        anchor: .top
                     )
                 }
 
@@ -221,7 +211,7 @@ struct DetailReducer: Reducer {
                 let latestPartMessages: [Message] = {
                     var validMessages: [Message] = []
 
-                    for message in state.messages.reversed() {
+                    for message in state.messages {
                         if message.source == .breaker {
                             break
                         } else {

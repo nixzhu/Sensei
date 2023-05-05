@@ -142,17 +142,17 @@ struct AppReducer: Reducer {
                         do {
                             let localMessages = try databaseManager.messages(of: chat.localChat)
 
-                            let messages = localMessages.map { $0.message }
+                            let messages = localMessages.map { $0.message }.reversed()
 
                             state.chatMessages[chat.id] = .init(
                                 uniqueElements: messages
                             )
 
-                            if let message = messages.last {
+                            if let message = messages.first {
                                 state.animatedMessageToScrollTo = .init(
                                     animated: false,
                                     message: message,
-                                    anchor: .bottom
+                                    anchor: .top
                                 )
                             }
                         } catch {
@@ -167,7 +167,7 @@ struct AppReducer: Reducer {
                             let localMessages = try databaseManager.messages(of: chat.localChat)
 
                             state.chatMessages[chat.id] = .init(
-                                uniqueElements: localMessages.map { $0.message }
+                                uniqueElements: localMessages.map { $0.message }.reversed()
                             )
                         } catch {
                             print("error:", error)

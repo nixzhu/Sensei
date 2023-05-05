@@ -25,12 +25,15 @@ struct DetailView: View {
                                 )
                             ) {
                                 MessageRowView(store: $0)
+                                    .rotationEffect(.radians(.pi))
+                                    .scaleEffect(x: -1, y: 1, anchor: .center)
                             }
                         }
                         .padding(.horizontal)
-                        .padding(.top, 10)
                     }
                 }
+                .rotationEffect(.radians(.pi))
+                .scaleEffect(x: -1, y: 1, anchor: .center)
                 .background(Color(.textBackgroundColor))
                 .onChange(of: viewStore.animatedMessageToScrollTo) { value in
                     if let value {
@@ -111,7 +114,7 @@ struct DetailView: View {
                         .frame(height: 56)
                     }
                     .padding(8)
-                    .background(.regularMaterial, in: Rectangle())
+                    .background(.thinMaterial, in: Rectangle())
                     .onAppear {
                         focusedField = .input
                     }
